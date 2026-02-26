@@ -321,6 +321,10 @@ The PCB was designed in KiCad and manufactured externally. Track widths on the p
 ![me](https://github.com/antonpatino/2DOF-TVC-Rocket-Controller/blob/main/images/actuation_system.gif)
 >2 DOF actuation mechanism.
 
+<img src="https://github.com/antonpatino/2DOF-TVC-Rocket-Controller/blob/main/images/module_exploded_view.jpg" width="500">
+
+>3D Model of the module.
+
 ---
 ## Installation
 
