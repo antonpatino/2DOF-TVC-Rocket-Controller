@@ -170,7 +170,7 @@ K_aug = dlqr(A_aug, B_aug, Q_aug, R)
 with weighting matrices:
 ```
 Qx = diag([10, 10, 0.0001, 0.0001])   % Penalise angle error >> rate error
-Qi = diag([300, 300])                  % Strong integral action
+Qi = diag([50, 50])                  % Strong integral action
 R  = 1.5 · I₂                         % Moderate actuator effort penalty
 ```
 
@@ -189,11 +189,11 @@ u = Ki·ξ − Kx·x
 
 **Current gains (hardcoded in `LQR.ino`):**
 ```
-Kx = [[ 0.0,    −84.1365,  0.0,    −15.4607],
-      [−84.1365,  0.0,    −15.4607,  0.0    ]]
+Kx = [[ 0.0,    −1.694,  0.0,    -0.0782],
+      [-1.694,  0.0,    -0.0782,  0.0    ]]
 
-Ki = [[ 0.1813,  0.8081],
-      [ 0.3882, −0.1225]]
+Ki = [[  0.0000,  -3.3516],
+      [ -3.3516,   0.0000]]
 ```
 
 Closed-loop stability is verified automatically at the end of the script — all discrete eigenvalues must lie strictly inside the unit circle.
@@ -229,10 +229,10 @@ Once the step response meets the performance requirements, the `Kx` and `Ki` val
 6. Paste the verified gains into `firmware/LQR.ino`:
 
 ```cpp
-float Kx[2][4] = { {0.0, -84.1365, 0.0, -15.4607},
-                   {-84.1365, 0.0, -15.4607, 0.0} };
-float Ki[2][2] = { {0.1813, 0.8081},
-                   {0.3882, -0.1225} };
+float Kx[2][4] = { {0.0, -1.694, 0.0, -0.0782},
+                   {-1.694, 0.0, -0.0782, 0.0} };
+float Ki[2][2] = { {0.0000, -3.3516},
+                   {-3.3516, 0.0000} };
 ```
 
 ---
@@ -265,7 +265,9 @@ yaw_rocket   = -sin(theta_mount_rad) * pitch_s_deg + cos(theta_mount_rad) * yaw_
 ```cpp
 void LQRCompute(float dt, float x[4], float output[2]) {
   error[i]    = setpoint[i] - x[i];
-  integral[i] += error[i] * dt;
+  
+  //leaky integrator to prevent saturation before launch (0.99)
+  integral[i] = (integral[i] * 0.99f) + (error[i] * dt);
 
   output[i] = Ki * integral  -  Kx * x;
 
@@ -279,7 +281,7 @@ float x[4] = {
   DEG2RAD(pitch_rocket),   // θ_pitch
   DEG2RAD(yaw_rocket),     // θ_yaw
   DEG2RAD(gy_filt),        // ω_pitch
-  DEG2RAD(gx_filt)         // ω_yaw
+  DEG2RAD(gz_filt)         // ω_yaw
 };
 ```
 
