@@ -7,8 +7,8 @@
 #define RAD2DEG(x) (x)*4068.0/71.0
 
 //Gains (use matlab script "Gain_calculate.m" to get them)
-float Kx[2][4] = { {0.0, -1.9285, 0.0, -0.0814}, {-1.9285, 0.0, -0.0814, 0.0} };
-float Ki[2][2] = { {0.0, -7.9661}, {-7.9661, 0.0} };
+float Kx[2][4] = { {0.0, -1.694, 0.0, -0.0782}, {-1.694, 0.0, -0.0782, 0.0} };
+float Ki[2][2] = { {0.0, -3.3516}, {-3.3516, 0.0} };
 
 // Objects
 ITG3200 gyro;
@@ -27,8 +27,8 @@ float pitch_zero_offset = 0.0;
 float roll_zero_offset = 92.0;
 
 // Pins
-const int PIN_SERVO_PITCH = 26;   // TVC pitch axis
-const int PIN_SERVO_YAW   = 25;   // TVC yaw axis
+const int PIN_SERVO_PITCH = 25;   // TVC pitch axis
+const int PIN_SERVO_YAW   = 26;   // TVC yaw axis
 const int PIN_BUTTON_LQR  = 14;   // Button to enable LQR control
 const int PIN_LED_OK      = 12;   // Status OK LED pin
 const int PIN_LED_ERR     = 13;   // Error LED pin
@@ -94,8 +94,10 @@ void LQRCompute(float dt, float x[4], float output[2]) {
 
   for (int i = 0; i < 2; i++) {
     //Calculate error and integral term
-    error[i] = setpoint[i] - x[i]; // Basado en que los estados 1 y 2 son los ángulos
-    integral[i] += error[i] * dt;
+    error[i] = setpoint[i] - x[i]; 
+    
+    //leaky integrator to prevent saturation before launch (0.99)
+    integral[i] = (integral[i] * 0.99f) + (error[i] * dt);
     
     //reset output
     output[i] = 0;
@@ -160,6 +162,8 @@ void setup() {
   ADXL345.setRange(ADXL345_RANGE_8G);
   #endif
 
+  delay(500);
+
   // Calibrate gyro bias using 500 samples
   int GYRO_SAMPLES = 500;
   int SAMPLE_DELAY_MS = 3;
@@ -205,13 +209,13 @@ void loop() {
   // ACCELEROMETER
   int accraw[3] = {0,0,0};
   ADXL345.readAccel(accraw);
-  int16_t ax_raw = (int16_t)accraw[0];
-  int16_t ay_raw = (int16_t)accraw[1];
+  int16_t ay_raw = (int16_t)accraw[0];
+  int16_t ax_raw = (int16_t)accraw[1];
   int16_t az_raw = (int16_t)accraw[2];
 
   // Apply offsets and scaling
-  float ax_g = ((float)ax_raw - accel_offset[0]) * accel_g[0];
-  float ay_g = ((float)ay_raw - accel_offset[1]) * accel_g[1];
+  float ax_g = ((float)ax_raw - accel_offset[1]) * accel_g[1];
+  float ay_g = ((float)ay_raw - accel_offset[0]) * accel_g[0];
   float az_g = ((float)az_raw - accel_offset[2]) * accel_g[2];
 
   // Apply Low-Pass Filtering
@@ -228,11 +232,11 @@ void loop() {
 
   // GYROSCOPE
   float gx_dps = 0, gy_dps = 0, gz_dps = 0;
-  gyro.getAngularVelocity(&gx_dps, &gy_dps, &gz_dps);  
+  gyro.getAngularVelocity(&gy_dps, &gx_dps, &gz_dps);  
   
   // Apply bias offsets
-  gx_dps -= gyro_bias_dps[0];
-  gy_dps -= gyro_bias_dps[1];
+  gx_dps -= gyro_bias_dps[1];
+  gy_dps -= gyro_bias_dps[0];
   gz_dps -= gyro_bias_dps[2];
 
   // Apply Low-Pass Filtering
@@ -261,7 +265,7 @@ void loop() {
     DEG2RAD(pitch_rocket),
     DEG2RAD(yaw_rocket),
     DEG2RAD(gy_filt),
-    DEG2RAD(gx_filt)};
+    DEG2RAD(gz_filt)};
 
   // Enable LQR Control if button is pressed (Active LOW)
   if (digitalRead(PIN_BUTTON_LQR) == LOW) {
@@ -269,13 +273,9 @@ void loop() {
       //Apply LQR control  
       LQRCompute(dt, x, out_servos_rad);
 
-      //Convert the output in radians of LQRCompute to degrees
-      float out_pitch_deg = RAD2DEG(out_servos_rad[0]);
-      float out_yaw_deg   = RAD2DEG(out_servos_rad[1]);
-
-      //Move servos
-      moveServoDegrees(servoPitch, out_pitch_deg, SERVO_CENTER_P);
-      moveServoDegrees(servoYaw, out_yaw_deg, SERVO_CENTER_Y);
+      //Convert the output in radians of LQRCompute to degrees and move servos
+      moveServoDegrees(servoPitch, RAD2DEG(out_servos_rad[0]), SERVO_CENTER_P);
+      moveServoDegrees(servoYaw, RAD2DEG(out_servos_rad[1]), SERVO_CENTER_Y);
   }
 
   // Serial Debug Output
@@ -291,8 +291,8 @@ void loop() {
     Serial.print("  roll_sensor_offset: "); Serial.print(roll_off, 2);
     Serial.print("  pitch_rocket: "); Serial.print(pitch_rocket, 2);
     Serial.print("  yaw_rocket: "); Serial.print(yaw_rocket, 2);
-    Serial.print("  servo_pitch: "); Serial.print(out_servos_rad[0], 2);
-    Serial.print("  servo_yaw: "); Serial.println(out_servos_rad[1], 2);
+    Serial.print("  servo_pitch: "); Serial.print(RAD2DEG(out_servos_rad[0]), 2);
+    Serial.print("  servo_yaw: "); Serial.println(RAD2DEG(out_servos_rad[1]), 2);
 
     th = t;
   }
