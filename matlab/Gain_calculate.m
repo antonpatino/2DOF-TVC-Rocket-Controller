@@ -97,7 +97,7 @@ D_num = zeros(2, 2);
 
 % LQR Weights
 Qx = diag([10, 10, 0.0001, 0.0001]); % Weights on [tp, ty, op, oy]
-Qi = diag([300, 300]);       % Weights on integral error of [tp, ty]
+Qi = diag([50, 50]);       % Weights on integral error of [tp, ty]
 R  = 1.5 * eye(2);           % Weight on control effort (gp, gy)
 
 % Augment System for Integral Action (Discrete Domain)
@@ -137,4 +137,5 @@ if all(abs(cl_poles) < 1)
     fprintf('Success: Discrete closed-loop system is STABLE.\n');
 else
     warning('System is UNSTABLE. Check Q/R weights.');
+
 end
