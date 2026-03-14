@@ -225,9 +225,9 @@ void loop() {
   az_filt = a_a * az_g + (1.0 - a_a) * az_filt;
 
   // Calculate angles from accelerometer
-  float roll_acc_rad = atan2f(ay_filt, az_filt);
+  float roll_acc_rad = atan2f(ay_g, az_g);
   float roll_acc_deg = roll_acc_rad * 180.0f / PI;
-  float pitch_acc_rad = atan2f(-ax_filt, sqrtf(ay_filt * ay_filt + az_filt * az_filt));
+  float pitch_acc_rad = atan2f(-ax_g, sqrtf(ay_g * ay_g + az_g * az_g));
   float pitch_acc_deg = pitch_acc_rad * 180.0f / PI;
 
   // GYROSCOPE
@@ -246,8 +246,8 @@ void loop() {
   gz_filt = a_g * gz_dps + (1.0 - a_g) * gz_filt;
 
   // Calculate angles from gyroscope integration
-  float pitchFromGyro = pitch + gy_filt * dt;
-  float rollFromGyro  = roll  + gx_filt * dt;
+  float pitchFromGyro = pitch + gy_dps * dt;
+  float rollFromGyro  = roll  + gz_dps * dt;
 
   // Complementary Filter Fusion
   pitch = (1.0 - alpha) * pitchFromGyro + alpha * pitch_acc_deg;
