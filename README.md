@@ -323,9 +323,19 @@ The PCB was designed in KiCad and manufactured externally. Track widths on the p
 ![me](https://github.com/antonpatino/2DOF-TVC-Rocket-Controller/blob/main/images/actuation_system.gif)
 >2 DOF actuation mechanism.
 
+
+<img src="https://github.com/antonpatino/2DOF-TVC-Rocket-Controller/blob/main/images/CAD_module_closeup.JPG" width="500">
+
+>CAD model close-up of the module.
+
 <img src="https://github.com/antonpatino/2DOF-TVC-Rocket-Controller/blob/main/images/module_exploded_view.jpg" width="500">
 
->3D Model of the module.
+>Exploded view of the module.
+
+
+<img src="https://github.com/antonpatino/2DOF-TVC-Rocket-Controller/blob/main/images/complete_cad_model.JPG" width="500">
+
+>Complete CAD model.
 
 ---
 ## Installation
@@ -334,8 +344,8 @@ The PCB was designed in KiCad and manufactured externally. Track widths on the p
 
 ```
 ESP32Servo
-Wire              (built-in)
-ITG3200           (DFRobot)
+Wire              
+ITG3200          
 DFRobot_ADXL345
 ```
 
@@ -363,14 +373,13 @@ LQR is activated by holding the button on GPIO 14 (active LOW). Status LEDs on G
 | Parameter | Value |
 |---|---|
 | Total budget | €270 |
-| Timeline | 16 months (Sept 2024 – Jan 2026) |
+| Timeline | 18 months (Sept 2024 – Feb 2026) |
 | Design iterations | 3 full prototypes |
 | Rocket mass | 0.723 kg |
 | Fuselage diameter | Ø85 mm |
-| Moment of inertia (pitch/yaw) | 0.00694 kg·m² (bifilar pendulum) |
+| Moment of inertia (pitch/yaw) | 0.00694 kg·m² |
 | Control sample time | ~0.02 s (50 Hz) |
 | Max gimbal deflection | ±12° |
-| Servo rate saturation | 62°/s |
 
 ---
 
@@ -392,7 +401,7 @@ LQR is activated by holding the button on GPIO 14 (active LOW). Status LEDs on G
 
 **Antón Patiño Carro** — B.Sc. Mechanical Engineering, University of A Coruña (UDC)  
 anton.patino.career@gmail.com  
-[linkedin.com/in/anton-patino-carro](https://linkedin.com/in/anton-patino-carro) · [github.com/antonpatino](https://github.com/antonpatino)
+[linkedin.com/in/anton-patino-carro](https://linkedin.com/in/anton-patino-carro)
 
 ---
 
